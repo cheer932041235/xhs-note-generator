@@ -1444,6 +1444,212 @@
       transition: transform 0.3s;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+    
+    /* ========== 响应式适配 - 平板 ========== */
+    @media screen and (max-width: 1024px) {
+      body {
+        padding: 20px;
+        gap: 25px;
+      }
+      
+      .controls {
+        width: 320px;
+      }
+      
+      .memo-page {
+        width: 480px;
+        height: 640px;
+      }
+      
+      .memo-inner {
+        padding: 28px;
+      }
+      
+      .memo-title {
+        font-size: 26px;
+      }
+      
+      .memo-content {
+        font-size: 15px;
+      }
+    }
+    
+    /* ========== 响应式适配 - 手机 ========== */
+    @media screen and (max-width: 768px) {
+      body {
+        flex-direction: column;
+        padding: 15px;
+        gap: 20px;
+        min-height: auto;
+      }
+      
+      /* 控制面板全宽 */
+      .controls {
+        width: 100%;
+        position: relative;
+        top: 0;
+        max-height: none;
+        order: 1;
+      }
+      
+      .control-group textarea {
+        min-height: 200px;
+      }
+      
+      /* 预览区域 */
+      .preview-area {
+        width: 100%;
+        order: 2;
+      }
+      
+      /* 备忘录页面适配 */
+      .memo-page {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        min-height: 520px;
+        aspect-ratio: 3/4;
+      }
+      
+      .memo-inner {
+        padding: 24px;
+      }
+      
+      .memo-title {
+        font-size: 22px;
+        margin-bottom: 10px;
+      }
+      
+      .memo-subtitle {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+      
+      .memo-content {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      
+      .memo-content .section-title {
+        font-size: 13px;
+        padding: 5px 10px;
+      }
+      
+      .memo-content .step-num {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+      }
+      
+      .page-indicator {
+        font-size: 11px;
+        bottom: 15px;
+        right: 24px;
+      }
+      
+      /* 侧边栏全屏 */
+      .sidebar {
+        width: 100%;
+      }
+      
+      .sidebar-toggle {
+        width: 32px;
+        height: 70px;
+        font-size: 14px;
+      }
+      
+      .sidebar-toggle span {
+        font-size: 11px;
+      }
+      
+      /* 主题切换 */
+      .theme-switcher {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .theme-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+      
+      /* 页面导航 */
+      .preview-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+      
+      /* 按钮 */
+      .btn {
+        padding: 14px;
+        font-size: 14px;
+      }
+      
+      .btn-row {
+        flex-direction: column;
+      }
+      
+      /* 弹窗适配 */
+      .modal {
+        width: 95%;
+        max-width: 400px;
+        margin: 10px;
+      }
+      
+      .quick-actions {
+        gap: 2px;
+      }
+      
+      .quick-action {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+    }
+    
+    /* ========== 响应式适配 - 小手机 ========== */
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      .controls {
+        padding: 18px;
+        border-radius: 15px;
+      }
+      
+      .controls h2 {
+        font-size: 16px;
+      }
+      
+      .memo-page {
+        max-width: 340px;
+        min-height: 450px;
+      }
+      
+      .memo-inner {
+        padding: 20px;
+      }
+      
+      .memo-title {
+        font-size: 18px;
+      }
+      
+      .memo-content {
+        font-size: 13px;
+      }
+      
+      .control-group input,
+      .control-group textarea {
+        padding: 12px;
+        font-size: 14px;
+      }
+      
+      .tips {
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1761,34 +1967,28 @@
     
     <div class="control-group">
       <label>标题</label>
-      <input type="text" id="memo-title" value="研究生第一年，我走了太多弯路" oninput="updatePreview()">
+      <input type="text" id="memo-title" value="" placeholder="输入笔记标题" oninput="updatePreview()">
     </div>
     
     <div class="control-group">
       <label>副标题/系列标签（可选）</label>
-      <input type="text" id="memo-subtitle" value="读研避坑指南 1" oninput="updatePreview()">
+      <input type="text" id="memo-subtitle" value="" placeholder="如：干货分享 1" oninput="updatePreview()">
     </div>
     
     <div class="control-group">
       <label>正文内容（支持 **加粗** ==高亮==）</label>
       <button class="save-topic-btn" onclick="saveCurrentAsTopic()">💾 存为选题</button>
-      <textarea id="memo-content" oninput="updatePreview()">刚读研那会儿，我真的很迷茫。
-导师让我"先看看文献"，我就真的傻傻地一篇篇往下看，看了两个月，啥也没记住。后来才知道，应该先看综述，再顺着引用去找关键的几篇就够了。
-代码也是，一开始总想着自己从零写，结果写了删删了写，一个月过去了连baseline都没跑通。后来学聪明了，直接GitHub上找开源代码，先跑通再说，能改就改，改不了就在人家基础上加东西。
-最让我后悔的是，研一整整一年，我都没怎么和师兄师姐交流。总觉得自己啥也不会，问问题很丢人。结果很多坑人家早就踩过了，我又重新踩了一遍。
-现在回头看，研一最该做的几件事：
-**1. 别闷头看文献，要带着问题看**
-先搞清楚这个领域在解决什么问题，有哪些主流方法，再去看具体的论文。漫无目的地看，看再多也是白看。
-**2. 代码能跑通比写得漂亮重要**
-先复现，再优化。别一上来就想做到最好，那样永远开始不了。
-**3. 多问，多交流**
-师兄师姐、导师、同学，网上的博主，能问就问。闷头做只会越做越慢。
-**4. 早点确定方向**
-别什么都想学，挑一个小方向深挖，比东一榔头西一棒子强太多。
-**5. 学会管理文献和代码**
-Zotero管文献，GitHub管代码，Notion记笔记。
-==希望看到这篇的你，别再踩我踩过的坑了。==
-有问题评论区问我，看到都会回👇</textarea>
+      <textarea id="memo-content" placeholder="在这里输入正文内容...
+
+支持的格式：
+• 列表项
+①②③ 序号
+**加粗文字**
+==高亮文字==
+【小标题】
+> 引用块
+
+拖拽或粘贴可插入图片" oninput="updatePreview()"></textarea>
     </div>
     
     <div class="page-info" id="page-info">📄 共 1 页</div>
