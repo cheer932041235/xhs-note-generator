@@ -1,0 +1,2984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>苹果备忘录风格 - 小红书笔记生成器</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      padding: 30px;
+      display: flex;
+      gap: 40px;
+    }
+    
+    /* ========== 左侧控制面板 ========== */
+    .controls {
+      width: 380px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 24px;
+      color: #fff;
+      height: fit-content;
+      max-height: calc(100vh - 60px);
+      overflow-y: auto;
+      position: sticky;
+      top: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .controls::-webkit-scrollbar {
+      width: 6px;
+    }
+    .controls::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .controls::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+    
+    .controls-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .controls h2 {
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .quick-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .quick-action {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .quick-action:hover {
+      background: rgba(245, 166, 35, 0.3);
+      transform: scale(1.1);
+    }
+    
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .btn-row .btn {
+      flex: 1;
+      margin-top: 0;
+    }
+    
+    /* 主题切换器 - 放在预览区上方 */
+    .theme-switcher {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      width: fit-content;
+    }
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.6);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .theme-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .theme-btn.active {
+      background: linear-gradient(135deg, #f5a623 0%, #e8941f 100%);
+      color: #fff;
+    }
+    .theme-btn .theme-icon { font-size: 16px; }
+    
+    .control-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .control-group label {
+      display: block;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .control-group input,
+    .control-group textarea,
+    .control-group select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .control-group textarea {
+      min-height: 280px;
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    
+    .control-group textarea.drag-over {
+      border-color: #f5a623;
+      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
+      background: rgba(245, 166, 35, 0.05);
+      line-height: 1.8;
+    }
+    
+    .control-group input:focus,
+    .control-group textarea:focus,
+    .control-group select:focus {
+      outline: none;
+      border-color: #f5a623;
+      box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #f5a623 0%, #f7931e 100%);
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(245, 166, 35, 0.3);
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .btn-small {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 13px;
+      margin-top: 0;
+    }
+    
+    .page-info {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(245, 166, 35, 0.1);
+      border-radius: 12px;
+      color: #f5a623;
+      font-size: 14px;
+    }
+    
+    .tips {
+      margin-top: 15px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.8;
+    }
+    
+    .tips strong {
+      color: #f5a623;
+    }
+    
+    /* 保存当前内容按钮 */
+    .save-topic-btn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 6px 12px;
+      font-size: 12px;
+      background: rgba(245, 166, 35, 0.2);
+      border: 1px solid rgba(245, 166, 35, 0.3);
+      color: #f5a623;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .save-topic-btn:hover {
+      background: rgba(245, 166, 35, 0.3);
+    }
+    
+    /* ========== 右侧预览区 ========== */
+    .preview-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .preview-area .theme-switcher {
+      margin-bottom: 15px;
+    }
+    
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 540px;
+      margin-bottom: 15px;
+    }
+    
+    .preview-title {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 13px;
+    }
+    
+    .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .page-nav button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .page-nav button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .page-nav button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    
+    .page-nav .page-num {
+      color: #fff;
+      font-size: 14px;
+      min-width: 60px;
+      text-align: center;
+    }
+    
+    /* ========== 备忘录样式 ========== */
+    .memo-page {
+      width: 540px;
+      height: 720px;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      position: relative;
+      background: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #fefefe 0%, #fafafa 100%);
+      background-blend-mode: overlay;
+      background-size: 100px 100px, 100% 100%;
+    }
+    
+    .memo-page::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.92);
+      pointer-events: none;
+    }
+    
+    .memo-inner {
+      height: 100%;
+      position: relative;
+      z-index: 1;
+      padding: 35px 35px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .memo-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #d4830d;
+      line-height: 1.3;
+      margin-bottom: 15px;
+      letter-spacing: -0.5px;
+    }
+    
+    .memo-subtitle {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .memo-subtitle .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: #f5a623;
+      color: #fff;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .memo-body { flex: 1; overflow: hidden; }
+    
+    .memo-content {
+      font-size: 17px;
+      line-height: 1.65;
+      color: #1a1a1a;
+      white-space: pre-wrap;
+      word-break: break-word;
+      letter-spacing: 0.2px;
+    }
+    
+    .memo-content .bold { font-weight: 600; color: #000; }
+    .memo-content .highlight {
+      background: linear-gradient(180deg, transparent 60%, rgba(245, 166, 35, 0.35) 60%);
+      padding: 0 2px;
+    }
+    
+    /* 结构化格式样式 */
+    .memo-content .text-line {
+      margin-bottom: 3px;
+    }
+    .memo-content .text-line:empty {
+      height: 8px;
+    }
+    
+    .memo-content .section-title {
+      background: linear-gradient(135deg, #f5a623 0%, #e8941f 100%);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 12px 0 6px 0;
+      font-size: 15px;
+      display: inline-block;
+    }
+    .memo-content .section-title:first-child {
+      margin-top: 0;
+    }
+    .memo-content .section-label {
+      background: rgba(255,255,255,0.25);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 8px;
+      font-size: 13px;
+    }
+    
+    .memo-content .list-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 3px;
+      padding-left: 4px;
+    }
+    .memo-content .list-dot {
+      color: #f5a623;
+      font-weight: bold;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    
+    .memo-content .step-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 4px;
+      padding: 3px 0;
+    }
+    .memo-content .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: #f5a623;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    
+    .memo-content .quote-text {
+      background: rgba(245, 166, 35, 0.12);
+      color: #d4830d;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .memo-content .arrow {
+      color: #f5a623;
+      font-weight: bold;
+      padding: 0 2px;
+    }
+    
+    .memo-content .label {
+      color: #888;
+      font-weight: 500;
+    }
+    
+    /* 新增格式样式 */
+    .memo-content .list-item.accent .list-dot { color: #e74c3c; }
+    .memo-content .list-item.check .list-dot { color: #27ae60; font-size: 15px; }
+    .memo-content .list-item.cross .list-dot { color: #e74c3c; font-size: 15px; }
+    
+    .memo-content .icon-line {
+      margin-bottom: 4px;
+      font-size: 16px;
+    }
+    
+    .memo-content .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.5), transparent);
+      margin: 10px 0;
+    }
+    
+    .memo-content .quote-block {
+      border-left: 3px solid #f5a623;
+      padding: 6px 12px;
+      margin: 6px 0;
+      background: rgba(245, 166, 35, 0.08);
+      color: #666;
+      font-style: italic;
+    }
+    
+    .memo-content .strikethrough {
+      text-decoration: line-through;
+      color: #999;
+    }
+    
+    .memo-content .code-inline {
+      background: #f0f0f0;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 0.9em;
+      color: #e74c3c;
+    }
+    
+    .memo-content .emphasis-box {
+      background: linear-gradient(135deg, #f5a623, #e8941f);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    /* 表格样式 */
+    .memo-content .table-wrapper {
+      margin: 8px 0;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(245, 166, 35, 0.3);
+    }
+    
+    .memo-content .memo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .memo-content .memo-table th {
+      background: linear-gradient(135deg, #f5a623 0%, #e8941f 100%);
+      color: #fff;
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    .memo-content .memo-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid rgba(245, 166, 35, 0.15);
+    }
+    
+    .memo-content .memo-table tr.odd { background: #fff; }
+    .memo-content .memo-table tr.even { background: rgba(245, 166, 35, 0.05); }
+    .memo-content .memo-table tr:last-child td { border-bottom: none; }
+    
+    /* 图片样式 */
+    .memo-content .image-container {
+      margin: 10px 0;
+    }
+    .memo-content .image-container.align-left { text-align: left; }
+    .memo-content .image-container.align-center { text-align: center; }
+    .memo-content .image-container.align-right { text-align: right; }
+    
+    .memo-content .memo-image {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      object-fit: contain;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .memo-content .memo-image:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* 图片尺寸 */
+    .memo-content .memo-image.size-small { max-width: 30%; max-height: 120px; }
+    .memo-content .memo-image.size-medium { max-width: 50%; max-height: 180px; }
+    .memo-content .memo-image.size-large { max-width: 75%; max-height: 240px; }
+    .memo-content .memo-image.size-full { max-width: 100%; max-height: 300px; }
+    
+    .page-indicator {
+      position: absolute;
+      bottom: 25px;
+      right: 40px;
+      font-size: 13px;
+      color: #999;
+    }
+    
+    .memo-inner.no-title { padding-top: 25px; }
+    
+    /* ========== 知乎风格 ========== */
+    .theme-zhihu .memo-page {
+      background: #fff;
+      border-left: 4px solid #0066ff;
+    }
+    .theme-zhihu .memo-page::before {
+      background: transparent;
+    }
+    .theme-zhihu .memo-title {
+      color: #1a1a1a;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .theme-zhihu .memo-subtitle {
+      color: #0066ff;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .theme-zhihu .memo-subtitle .tag {
+      background: #0066ff;
+      border-radius: 4px;
+    }
+    .theme-zhihu .memo-content {
+      color: #333;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .theme-zhihu .memo-content .bold { color: #1a1a1a; }
+    .theme-zhihu .memo-content .highlight {
+      background: linear-gradient(180deg, transparent 60%, rgba(0, 102, 255, 0.2) 60%);
+    }
+    .theme-zhihu .memo-content .section-title {
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+      margin: 20px 0 12px 0;
+    }
+    .theme-zhihu .memo-content .list-dot { color: #0066ff; }
+    .theme-zhihu .memo-content .step-num { background: #0066ff; }
+    .theme-zhihu .memo-content .quote-text {
+      background: rgba(0, 102, 255, 0.1);
+      color: #0066ff;
+    }
+    .theme-zhihu .memo-content .quote-block {
+      border-left-color: #0066ff;
+      background: rgba(0, 102, 255, 0.05);
+    }
+    .theme-zhihu .memo-content .emphasis-box {
+      background: linear-gradient(135deg, #0066ff, #0052cc);
+    }
+    .theme-zhihu .memo-content .arrow { color: #0066ff; }
+    .theme-zhihu .memo-content .memo-table th {
+      background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+    }
+    .theme-zhihu .memo-content .table-wrapper {
+      border-color: rgba(0, 102, 255, 0.3);
+    }
+    .theme-zhihu .memo-content .memo-table td {
+      border-bottom-color: rgba(0, 102, 255, 0.1);
+    }
+    .theme-zhihu .memo-content .memo-table tr.even {
+      background: rgba(0, 102, 255, 0.03);
+    }
+    .theme-zhihu .page-indicator { color: #999; }
+    
+    /* ========== 暗黑风格 ========== */
+    .theme-dark .memo-page {
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    }
+    .theme-dark .memo-page::before {
+      background: transparent;
+    }
+    .theme-dark .memo-title {
+      color: #00d4ff;
+      font-size: 30px;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+    .theme-dark .memo-subtitle { color: rgba(255, 255, 255, 0.6); }
+    .theme-dark .memo-subtitle .tag {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    }
+    .theme-dark .memo-content {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .theme-dark .memo-content .bold { color: #fff; }
+    .theme-dark .memo-content .highlight {
+      background: linear-gradient(180deg, transparent 60%, rgba(0, 212, 255, 0.3) 60%);
+    }
+    .theme-dark .memo-content .section-title {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: #1a1a2e;
+    }
+    .theme-dark .memo-content .text-line { color: rgba(255, 255, 255, 0.85); }
+    .theme-dark .memo-content .list-dot { color: #00d4ff; }
+    .theme-dark .memo-content .step-num {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: #1a1a2e;
+    }
+    .theme-dark .memo-content .quote-text {
+      background: rgba(0, 212, 255, 0.15);
+      color: #00d4ff;
+    }
+    .theme-dark .memo-content .quote-block {
+      border-left-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .theme-dark .memo-content .emphasis-box {
+      background: linear-gradient(135deg, #00d4ff, #0099cc);
+      color: #1a1a2e;
+    }
+    .theme-dark .memo-content .arrow { color: #00d4ff; }
+    .theme-dark .memo-content .label { color: rgba(255, 255, 255, 0.5); }
+    .theme-dark .memo-content .divider {
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5), transparent);
+    }
+    .theme-dark .memo-content .code-inline {
+      background: rgba(0, 212, 255, 0.15);
+      color: #00d4ff;
+    }
+    .theme-dark .memo-content .memo-table th {
+      background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+      color: #1a1a2e;
+    }
+    .theme-dark .memo-content .table-wrapper {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+    .theme-dark .memo-content .memo-table td {
+      border-bottom-color: rgba(0, 212, 255, 0.15);
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .theme-dark .memo-content .memo-table tr.odd { background: rgba(0, 0, 0, 0.2); }
+    .theme-dark .memo-content .memo-table tr.even { background: rgba(0, 212, 255, 0.05); }
+    .theme-dark .page-indicator { color: rgba(255, 255, 255, 0.4); }
+    
+    /* ========== 导出容器 ========== */
+    .export-container { position: fixed; left: -9999px; top: 0; }
+    .export-container .memo-page { width: 1080px; height: 1440px; border-radius: 0; }
+    .export-container .memo-inner { padding: 70px 70px; }
+    .export-container .memo-title { font-size: 64px; margin-bottom: 30px; }
+    .export-container .memo-subtitle { font-size: 30px; margin-bottom: 24px; gap: 16px; }
+    .export-container .memo-subtitle .tag { width: 44px; height: 44px; border-radius: 10px; font-size: 24px; }
+    .export-container .memo-content { font-size: 34px; line-height: 1.65; }
+    .export-container .page-indicator { bottom: 40px; right: 70px; font-size: 24px; }
+    .export-container .memo-inner.no-title { padding-top: 50px; }
+    /* 导出时的结构化样式 */
+    .export-container .memo-content .section-title { font-size: 30px; padding: 12px 24px; border-radius: 12px; margin: 24px 0 12px 0; }
+    .export-container .memo-content .section-label { padding: 4px 14px; border-radius: 6px; font-size: 24px; margin-right: 14px; }
+    .export-container .memo-content .text-line { margin-bottom: 6px; }
+    .export-container .memo-content .list-item { margin-bottom: 6px; padding-left: 8px; }
+    .export-container .memo-content .list-dot { margin-right: 14px; font-size: 34px; }
+    .export-container .memo-content .step-item { margin-bottom: 8px; padding: 6px 0; }
+    .export-container .memo-content .step-num { width: 40px; height: 40px; font-size: 24px; margin-right: 16px; }
+    .export-container .memo-content .quote-text { padding: 2px 10px; border-radius: 6px; }
+    .export-container .memo-content .arrow { padding: 0 4px; }
+    /* 导出时表格样式 */
+    .export-container .memo-content .table-wrapper { margin: 16px 0; border-radius: 16px; border-width: 2px; }
+    .export-container .memo-content .memo-table { font-size: 28px; }
+    .export-container .memo-content .memo-table th { padding: 16px 20px; font-size: 26px; }
+    .export-container .memo-content .memo-table td { padding: 12px 20px; }
+    /* 导出时其他新样式 */
+    .export-container .memo-content .divider { margin: 20px 0; height: 2px; }
+    .export-container .memo-content .quote-block { padding: 12px 24px; margin: 12px 0; border-left-width: 6px; }
+    .export-container .memo-content .code-inline { padding: 2px 12px; font-size: 28px; }
+    .export-container .memo-content .emphasis-box { padding: 4px 16px; border-radius: 8px; }
+    .export-container .memo-content .icon-line { font-size: 32px; margin-bottom: 8px; }
+    /* 导出时图片样式 */
+    .export-container .memo-content .image-container { margin: 20px 0; }
+    .export-container .memo-content .memo-image { border-radius: 16px; cursor: default; }
+    .export-container .memo-content .memo-image.size-small { max-width: 30%; max-height: 240px; }
+    .export-container .memo-content .memo-image.size-medium { max-width: 50%; max-height: 360px; }
+    .export-container .memo-content .memo-image.size-large { max-width: 75%; max-height: 480px; }
+    .export-container .memo-content .memo-image.size-full { max-width: 100%; max-height: 600px; }
+    
+    /* ========== 侧边栏 ========== */
+    .sidebar-toggle {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 100px;
+      background: linear-gradient(135deg, #f5a623 0%, #f7931e 100%);
+      border: none;
+      border-radius: 0 12px 12px 0;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.3s;
+      box-shadow: 2px 0 15px rgba(245, 166, 35, 0.3);
+    }
+    
+    .sidebar-toggle:hover { width: 50px; }
+    .sidebar-toggle span { writing-mode: vertical-rl; font-size: 13px; font-weight: 600; }
+    
+    .sidebar-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+    
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 420px;
+      height: 100vh;
+      background: #1a1a2e;
+      z-index: 1002;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+    }
+    .sidebar.show { transform: translateX(0); }
+    
+    .sidebar-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-header h3 { color: #fff; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+    .sidebar-header .close-btn {
+      width: 32px; height: 32px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    /* 侧边栏标签页 */
+    .sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-tab {
+      flex: 1;
+      padding: 14px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .sidebar-tab:hover { color: rgba(255, 255, 255, 0.8); }
+    .sidebar-tab.active { color: #f5a623; }
+    .sidebar-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: #f5a623;
+      border-radius: 1px;
+    }
+    
+    .sidebar-actions {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-actions .btn { margin-top: 0; padding: 12px; }
+    
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px 20px;
+    }
+    .sidebar-body::-webkit-scrollbar { width: 6px; }
+    .sidebar-body::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+    .sidebar-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* 备份区域 */
+    .sidebar-footer {
+      padding: 15px 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .backup-status {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .backup-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .backup-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .backup-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .backup-btn-primary {
+      background: linear-gradient(135deg, #f5a623 0%, #f7931e 100%);
+      border-color: #f5a623;
+      color: #fff;
+      font-weight: 600;
+    }
+    .backup-btn-primary:hover {
+      background: linear-gradient(135deg, #f7931e 0%, #e8850a 100%);
+      border-color: #e8850a;
+    }
+    
+    /* 选题卡片 */
+    .topic-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+    .topic-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(245, 166, 35, 0.3);
+    }
+    
+    .topic-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .topic-card-title {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+    .topic-card-title:hover { color: #f5a623; }
+    
+    /* 心得卡片样式 */
+    .note-card { padding-left: 16px; }
+    .note-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 500;
+    }
+    .note-card-content {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin: 8px 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
+    .topic-card-actions { display: flex; gap: 5px; }
+    .topic-card-actions button {
+      width: 26px; height: 26px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .topic-card-actions .use-btn { background: rgba(76, 175, 80, 0.2); color: #81c784; }
+    .topic-card-actions .use-btn:hover { background: rgba(76, 175, 80, 0.4); }
+    .topic-card-actions .archive-btn { background: rgba(33, 150, 243, 0.2); color: #64b5f6; }
+    .topic-card-actions .archive-btn:hover { background: rgba(33, 150, 243, 0.4); }
+    .topic-card-actions .delete-btn { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+    .topic-card-actions .delete-btn:hover { background: rgba(244, 67, 54, 0.4); }
+    
+    .topic-card-content {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.5;
+      max-height: 40px;
+      overflow: hidden;
+    }
+    
+    .topic-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .topic-card-date { font-size: 11px; color: rgba(255, 255, 255, 0.3); }
+    
+    .topic-empty {
+      text-align: center;
+      padding: 30px 20px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .topic-empty-icon { font-size: 40px; margin-bottom: 10px; }
+    .topic-empty-text { font-size: 13px; }
+    
+    /* ========== 弹窗通用样式 ========== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    
+    .modal {
+      width: 500px;
+      max-height: 80vh;
+      background: #1a1a2e;
+      border-radius: 20px;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-overlay.show .modal { transform: scale(1); }
+    
+    .modal-header {
+      padding: 18px 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h4 { color: #fff; font-size: 17px; }
+    .modal-header .close-btn {
+      width: 30px; height: 30px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .modal-body {
+      padding: 20px 25px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-body .control-group { margin-bottom: 15px; }
+    .modal-body .control-group:last-child { margin-bottom: 0; }
+    .modal-body textarea { min-height: 120px; }
+    .modal-body select {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .modal-body select option {
+      background: #1a1a2e;
+      color: #fff;
+    }
+    
+    .modal-footer {
+      padding: 15px 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-footer .btn { width: auto; padding: 10px 20px; margin-top: 0; font-size: 14px; }
+    .modal-footer .btn-danger {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      border-color: #c0392b;
+    }
+    .modal-footer .btn-danger:hover {
+      background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    }
+    
+    /* ========== 图片编辑弹窗 ========== */
+    .image-editor { width: 500px; }
+    
+    .img-preview-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .img-preview-box img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    
+    .img-settings .control-group { margin-bottom: 18px; }
+    .img-settings .control-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .align-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #aaa;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .align-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .align-btn.active {
+      background: linear-gradient(135deg, #f5a623 0%, #e8941f 100%);
+      border-color: #f5a623;
+      color: #fff;
+    }
+    
+    .size-options {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .size-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #aaa;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .size-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .size-btn.active {
+      background: linear-gradient(135deg, #f5a623 0%, #e8941f 100%);
+      border-color: #f5a623;
+      color: #fff;
+    }
+    .size-btn .size-icon { font-size: 20px; }
+    .size-btn span:nth-child(2) { font-size: 13px; font-weight: 500; }
+    .size-btn .size-hint { font-size: 11px; opacity: 0.7; }
+    
+    /* ========== 标签词库弹窗 ========== */
+    .tags-modal .modal { width: 600px; }
+    
+    .tag-category {
+      margin-bottom: 20px;
+    }
+    .tag-category:last-child { margin-bottom: 0; }
+    
+    .tag-category-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f5a623;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .tag-item {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-item:hover {
+      background: rgba(245, 166, 35, 0.2);
+      border-color: rgba(245, 166, 35, 0.4);
+      color: #f5a623;
+    }
+    .tag-item.selected {
+      background: rgba(245, 166, 35, 0.3);
+      border-color: #f5a623;
+      color: #f5a623;
+    }
+    
+    .selected-tags {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+    }
+    .selected-tags-title {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 10px;
+    }
+    .selected-tags-content {
+      font-size: 14px;
+      color: #fff;
+      line-height: 1.6;
+      word-break: break-all;
+      min-height: 20px;
+    }
+    .selected-tags-content:empty::before {
+      content: '点击上方标签添加...';
+      color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* 推流机制弹窗 */
+    .flow-modal-content {
+      max-width: 600px;
+    }
+    .flow-body {
+      max-height: 65vh;
+      overflow-y: auto;
+    }
+    .flow-section {
+      margin-bottom: 24px;
+    }
+    .flow-section:last-child {
+      margin-bottom: 0;
+    }
+    .flow-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f5a623;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(245, 166, 35, 0.2);
+    }
+    
+    .flow-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .flow-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px 15px;
+      border-left: 3px solid #f5a623;
+    }
+    .flow-time {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .flow-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 6px;
+    }
+    .flow-tip {
+      font-size: 12px;
+      color: #f5a623;
+    }
+    
+    .flow-levels {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .flow-level {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .level-range {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .level-issue {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .flow-level.level-1 { border-left: 3px solid #ff6b6b; }
+    .flow-level.level-2 { border-left: 3px solid #ffa94d; }
+    .flow-level.level-3 { border-left: 3px solid #ffd43b; }
+    .flow-level.level-4 { border-left: 3px solid #69db7c; }
+    .flow-level.level-5 { border-left: 3px solid #4dabf7; }
+    .flow-level.level-6 { border-left: 3px solid #da77f2; }
+    
+    .ces-formula {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .ces-item {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .ces-item.highlight {
+      background: rgba(245, 166, 35, 0.2);
+      color: #f5a623;
+      font-weight: 600;
+    }
+    .ces-plus {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 16px;
+    }
+    .ces-tip {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+    }
+    
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .check-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .check-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #f5a623;
+    }
+    
+    /* 加载提示 */
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .loading-overlay.show { opacity: 1; pointer-events: auto; }
+    
+    .loading-spinner {
+      width: 50px; height: 50px;
+      border: 3px solid rgba(245, 166, 35, 0.2);
+      border-top-color: #f5a623;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #fff; margin-top: 20px; font-size: 14px; }
+    
+    /* 复制成功提示 */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(76, 175, 80, 0.95);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      transition: transform 0.3s;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <!-- 侧边栏切换按钮 -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()">
+    📚
+    <span>内容库</span>
+  </button>
+  
+  <!-- 侧边栏遮罩 -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+  
+  <!-- 侧边栏 -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>📚 内容管理</h3>
+      <button class="close-btn" onclick="toggleSidebar()">×</button>
+    </div>
+    
+    <!-- 标签页切换 -->
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchTab('topics')">📝 选题</button>
+      <button class="sidebar-tab" onclick="switchTab('notes')">💡 心得</button>
+      <button class="sidebar-tab" onclick="switchTab('history')">📜 历史</button>
+    </div>
+    
+    <!-- 选题库内容 -->
+    <div id="tab-topics" class="tab-content active">
+      <div class="sidebar-actions">
+        <button class="btn btn-primary" onclick="openNewTopicModal()">➕ 新建选题</button>
+      </div>
+      <div class="sidebar-body" id="topic-list"></div>
+    </div>
+    
+    <!-- 写作心得内容 -->
+    <div id="tab-notes" class="tab-content">
+      <div class="sidebar-actions">
+        <button class="btn btn-primary" onclick="openNewNoteModal()">➕ 记录心得</button>
+      </div>
+      <div class="sidebar-body" id="notes-list"></div>
+    </div>
+    
+    <!-- 历史记录内容 -->
+    <div id="tab-history" class="tab-content">
+      <div class="sidebar-body" id="history-list"></div>
+    </div>
+    
+    <!-- 备份区域 -->
+    <div class="sidebar-footer">
+      <div class="backup-status" id="backup-status">点击下方设置自动保存路径</div>
+      <div class="backup-actions">
+        <button class="backup-btn backup-btn-primary" onclick="setupAutoSave()" title="设置自动保存文件路径">📁 设置路径</button>
+      </div>
+      <div class="backup-actions" style="margin-top: 8px;">
+        <button class="backup-btn" onclick="exportBackup()" title="手动导出备份">📤 导出</button>
+        <button class="backup-btn" onclick="importBackup()" title="从文件恢复">📥 导入</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新建心得弹窗 -->
+  <div class="modal-overlay" id="note-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h4 id="note-modal-title">💡 记录心得</h4>
+        <button class="close-btn" onclick="closeNoteModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="control-group">
+          <label>心得类型</label>
+          <select id="note-type">
+            <option value="success">✅ 成功经验</option>
+            <option value="fail">❌ 踩坑教训</option>
+            <option value="idea">💡 灵感想法</option>
+            <option value="data">📊 数据复盘</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>心得内容 *</label>
+          <textarea id="note-content" placeholder="记录你的运营心得、踩过的坑、成功的经验..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeNoteModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveNote()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 新建选题弹窗 -->
+  <div class="modal-overlay" id="topic-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>📝 新建选题</h4>
+        <button class="close-btn" onclick="closeTopicModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="control-group">
+          <label>选题标题 *</label>
+          <input type="text" id="new-topic-title" placeholder="输入选题标题">
+        </div>
+        <div class="control-group">
+          <label>内容草稿（可选）</label>
+          <textarea id="new-topic-content" placeholder="可以先写一些内容草稿"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTopicModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveTopic()">保存</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 图片编辑弹窗 -->
+  <div class="modal-overlay" id="image-editor-modal">
+    <div class="modal image-editor">
+      <div class="modal-header">
+        <h4>🖼️ 图片设置</h4>
+        <button class="close-btn" onclick="closeImageEditor()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="img-preview-box">
+          <img id="img-preview" src="" alt="预览">
+        </div>
+        <div class="img-settings">
+          <div class="control-group">
+            <label>对齐方式</label>
+            <div class="btn-group">
+              <button type="button" class="align-btn" data-value="left" onclick="setAlign('left')">⬅️ 左对齐</button>
+              <button type="button" class="align-btn active" data-value="center" onclick="setAlign('center')">↔️ 居中</button>
+              <button type="button" class="align-btn" data-value="right" onclick="setAlign('right')">➡️ 右对齐</button>
+            </div>
+            <select id="img-align" style="display:none">
+              <option value="left">左对齐</option>
+              <option value="center" selected>居中</option>
+              <option value="right">右对齐</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>图片大小</label>
+            <div class="size-options">
+              <button type="button" class="size-btn" data-value="small" onclick="setSize('small')">
+                <span class="size-icon">🔹</span>
+                <span>小图</span>
+                <span class="size-hint">30%</span>
+              </button>
+              <button type="button" class="size-btn active" data-value="medium" onclick="setSize('medium')">
+                <span class="size-icon">🔷</span>
+                <span>中图</span>
+                <span class="size-hint">50%</span>
+              </button>
+              <button type="button" class="size-btn" data-value="large" onclick="setSize('large')">
+                <span class="size-icon">💎</span>
+                <span>大图</span>
+                <span class="size-hint">75%</span>
+              </button>
+              <button type="button" class="size-btn" data-value="full" onclick="setSize('full')">
+                <span class="size-icon">📐</span>
+                <span>全宽</span>
+                <span class="size-hint">100%</span>
+              </button>
+            </div>
+            <select id="img-size" style="display:none">
+              <option value="small">小 (30%)</option>
+              <option value="medium" selected>中 (50%)</option>
+              <option value="large">大 (75%)</option>
+              <option value="full">全宽 (100%)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" onclick="deleteImage()">🗑️ 删除图片</button>
+        <button class="btn btn-primary" onclick="applyImageSettings()">✓ 应用设置</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 标签词库弹窗 -->
+  <div class="modal-overlay tags-modal" id="tags-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>🏷️ 标签词库</h4>
+        <button class="close-btn" onclick="closeTagsModal()">×</button>
+      </div>
+      <div class="modal-body" id="tags-body">
+        <!-- 标签分类会动态生成 -->
+      </div>
+      <div class="selected-tags">
+        <div class="selected-tags-title">已选标签（点击复制）</div>
+        <div class="selected-tags-content" id="selected-tags" onclick="copySelectedTags()"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="clearSelectedTags()">清空</button>
+        <button class="btn btn-primary" onclick="copySelectedTags()">📋 复制标签</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 推流机制弹窗 -->
+  <div class="modal-overlay flow-modal" id="flow-modal">
+    <div class="modal flow-modal-content">
+      <div class="modal-header">
+        <h4>📈 小红书推流机制</h4>
+        <button class="close-btn" onclick="closeFlowModal()">×</button>
+      </div>
+      <div class="modal-body flow-body">
+        <div class="flow-section">
+          <div class="flow-section-title">⏰ 流量推送时间线</div>
+          <div class="flow-timeline">
+            <div class="flow-item">
+              <div class="flow-time">发布后 2小时</div>
+              <div class="flow-desc">初始曝光，推给目标群体</div>
+              <div class="flow-tip">💡 选对发布时间：上午10点 / 晚上10点</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-time">发布后 24小时</div>
+              <div class="flow-desc">优质笔记加权（CES系数）</div>
+              <div class="flow-tip">💡 及时回复评论，提升互动</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-time">发布后 7天</div>
+              <div class="flow-desc">分水岭：数据好加权，差就凉</div>
+              <div class="flow-tip">💡 关键期！持续关注数据</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-time">发布后 30天</div>
+              <div class="flow-desc">关闭自然推流，只剩搜索展示</div>
+              <div class="flow-tip">💡 标题要有搜索关键词</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-section">
+          <div class="flow-section-title">👀 流量池等级</div>
+          <div class="flow-levels">
+            <div class="flow-level level-1">
+              <div class="level-range">1级：0-100</div>
+              <div class="level-issue">可能违规或内容太差</div>
+            </div>
+            <div class="flow-level level-2">
+              <div class="level-range">2级：200-500</div>
+              <div class="level-issue">标题封面一般，需优化</div>
+            </div>
+            <div class="flow-level level-3">
+              <div class="level-range">3级：3k-5k</div>
+              <div class="level-issue">有干货但互动一般</div>
+            </div>
+            <div class="flow-level level-4">
+              <div class="level-range">4级：1w-2w</div>
+              <div class="level-issue">热门备选，进入人工审核</div>
+            </div>
+            <div class="flow-level level-5">
+              <div class="level-range">5级：10w-20w</div>
+              <div class="level-issue">热门笔记，内容有稀缺性</div>
+            </div>
+            <div class="flow-level level-6">
+              <div class="level-range">6级：100w+</div>
+              <div class="level-issue">大热门，头部达人</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flow-section">
+          <div class="flow-section-title">📊 CES评分公式</div>
+          <div class="ces-formula">
+            <span class="ces-item">点赞 ×1</span>
+            <span class="ces-plus">+</span>
+            <span class="ces-item">收藏 ×1</span>
+            <span class="ces-plus">+</span>
+            <span class="ces-item highlight">评论 ×4</span>
+            <span class="ces-plus">+</span>
+            <span class="ces-item highlight">转发 ×4</span>
+          </div>
+          <div class="ces-tip">评论和转发权重最高！引导用户评论很重要</div>
+        </div>
+        
+        <div class="flow-section">
+          <div class="flow-section-title">✅ 发布前检查清单</div>
+          <div class="checklist">
+            <label class="check-item"><input type="checkbox"> 标题有搜索关键词</label>
+            <label class="check-item"><input type="checkbox"> 封面图清晰有吸引力</label>
+            <label class="check-item"><input type="checkbox"> 内容末尾有互动引导</label>
+            <label class="check-item"><input type="checkbox"> 已检测违禁词</label>
+            <label class="check-item"><input type="checkbox"> 发布时间：上午10点 / 晚上10点</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeFlowModal()">知道了</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 加载提示 -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在生成图片...</div>
+  </div>
+  
+  <!-- 复制成功提示 -->
+  <div class="toast" id="toast">✓ 已复制到剪贴板</div>
+
+  <!-- 左侧控制面板 -->
+  <div class="controls">
+    <div class="controls-header">
+      <h2>📝 笔记生成器</h2>
+      <div class="quick-actions">
+        <a href="https://xhsplus.io/workspace#/3in1/sensitiveWords" target="_blank" class="quick-action" title="违禁词检测">🔍</a>
+        <div class="quick-action" onclick="openTagsModal()" title="标签词库">🏷️</div>
+        <div class="quick-action" onclick="openFlowModal()" title="推流机制">📈</div>
+        <a href="https://www.xiaohongshu.com/explore" target="_blank" class="quick-action" title="小红书">📱</a>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <label>标题</label>
+      <input type="text" id="memo-title" value="研究生第一年，我走了太多弯路" oninput="updatePreview()">
+    </div>
+    
+    <div class="control-group">
+      <label>副标题/系列标签（可选）</label>
+      <input type="text" id="memo-subtitle" value="读研避坑指南 1" oninput="updatePreview()">
+    </div>
+    
+    <div class="control-group">
+      <label>正文内容（支持 **加粗** ==高亮==）</label>
+      <button class="save-topic-btn" onclick="saveCurrentAsTopic()">💾 存为选题</button>
+      <textarea id="memo-content" oninput="updatePreview()">刚读研那会儿，我真的很迷茫。
+导师让我"先看看文献"，我就真的傻傻地一篇篇往下看，看了两个月，啥也没记住。后来才知道，应该先看综述，再顺着引用去找关键的几篇就够了。
+代码也是，一开始总想着自己从零写，结果写了删删了写，一个月过去了连baseline都没跑通。后来学聪明了，直接GitHub上找开源代码，先跑通再说，能改就改，改不了就在人家基础上加东西。
+最让我后悔的是，研一整整一年，我都没怎么和师兄师姐交流。总觉得自己啥也不会，问问题很丢人。结果很多坑人家早就踩过了，我又重新踩了一遍。
+现在回头看，研一最该做的几件事：
+**1. 别闷头看文献，要带着问题看**
+先搞清楚这个领域在解决什么问题，有哪些主流方法，再去看具体的论文。漫无目的地看，看再多也是白看。
+**2. 代码能跑通比写得漂亮重要**
+先复现，再优化。别一上来就想做到最好，那样永远开始不了。
+**3. 多问，多交流**
+师兄师姐、导师、同学，网上的博主，能问就问。闷头做只会越做越慢。
+**4. 早点确定方向**
+别什么都想学，挑一个小方向深挖，比东一榔头西一棒子强太多。
+**5. 学会管理文献和代码**
+Zotero管文献，GitHub管代码，Notion记笔记。
+==希望看到这篇的你，别再踩我踩过的坑了。==
+有问题评论区问我，看到都会回👇</textarea>
+    </div>
+    
+    <div class="page-info" id="page-info">📄 共 1 页</div>
+    
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="downloadAllPages()">📥 下载全部</button>
+      <button class="btn btn-secondary" onclick="downloadCurrentPage()">📄 当前页</button>
+    </div>
+    
+    <div class="tips">
+      <strong>格式：</strong> 【标题】 • 列表 ①序号 **加粗** ==高亮==<br>
+      <strong>图片：</strong> 拖拽/粘贴插入，点击编辑
+    </div>
+  </div>
+  
+  <!-- 右侧预览区 -->
+  <div class="preview-area" id="preview-container">
+    <!-- 主题切换放在预览区上方 -->
+    <div class="theme-switcher">
+      <button class="theme-btn active" data-theme="memo" onclick="switchTheme('memo')">
+        <span class="theme-icon">📒</span>
+        <span>备忘录</span>
+      </button>
+      <button class="theme-btn" data-theme="zhihu" onclick="switchTheme('zhihu')">
+        <span class="theme-icon">💬</span>
+        <span>知乎</span>
+      </button>
+      <button class="theme-btn" data-theme="dark" onclick="switchTheme('dark')">
+        <span class="theme-icon">🌙</span>
+        <span>暗黑</span>
+      </button>
+    </div>
+    
+    <div class="preview-header">
+      <span class="preview-title">预览</span>
+      <div class="page-nav">
+        <button onclick="prevPage()" id="btn-prev" disabled>‹</button>
+        <span class="page-num" id="page-display">1 / 1</span>
+        <button onclick="nextPage()" id="btn-next" disabled>›</button>
+      </div>
+    </div>
+    <div class="pages-container" id="pages-container"></div>
+  </div>
+  
+  <div class="export-container" id="export-container"></div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  
+  <script>
+    // ========== 数据存储 ==========
+    const TOPICS_KEY = 'xhs_topics_v3';
+    const HISTORY_KEY = 'xhs_history_v1';
+    const MAX_HISTORY = 50;
+    
+    // 标签词库数据
+    const TAG_CATEGORIES = [
+      {
+        name: '🎓 考研/保研',
+        tags: ['考研', '保研', '考研复试', '保研面试', '推免', '考研英语', '考研数学', '考研政治', '跨专业考研', '二战考研', '调剂']
+      },
+      {
+        name: '📚 研究生/科研',
+        tags: ['研究生', '读研', '科研', '研一', '研二', '研三', '硕士', '博士', '导师', '论文', '开题', '毕业论文', '科研小白']
+      },
+      {
+        name: '🤖 AI/编程',
+        tags: ['机器学习', '深度学习', 'Python', '人工智能', 'AI', '代码', '编程', 'ChatGPT', '大模型', 'PyTorch', '数据分析', 'CV', 'NLP']
+      },
+      {
+        name: '💡 干货/学习',
+        tags: ['干货', '建议收藏', '学习方法', '避坑', '经验分享', '学习', '自律', '时间管理', '效率', '工具推荐']
+      },
+      {
+        name: '😄 日常/情感',
+        tags: ['研究生日常', '科研日常', '读研生活', '精神状态', 'emo', '崩溃', '加油', '正能量']
+      }
+    ];
+    
+    let selectedTags = [];
+    let currentPage = 0;
+    let totalPages = 1;
+    let pagesData = [];
+    
+    // ========== 存储函数 ==========
+    const NOTES_KEY = 'xhs_notes_v1';
+    const BACKUP_FILE = 'xhs_backup.json';
+    
+    function getTopics() {
+      return JSON.parse(localStorage.getItem(TOPICS_KEY) || '[]');
+    }
+    function saveTopicsData(topics) {
+      localStorage.setItem(TOPICS_KEY, JSON.stringify(topics));
+      scheduleBackup();
+    }
+    function getHistory() {
+      return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    }
+    function saveHistoryData(history) {
+      // 限制最多50条
+      if (history.length > MAX_HISTORY) {
+        history = history.slice(0, MAX_HISTORY);
+      }
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      scheduleBackup();
+    }
+    function getNotes() {
+      return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+    }
+    function saveNotesData(notes) {
+      localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+      scheduleBackup();
+    }
+    
+    // ========== 备份功能 ==========
+    let backupTimer = null;
+    let lastBackupData = '';
+    let backupFileHandle = null; // 保存文件句柄，用于自动保存
+    
+    function scheduleBackup() {
+      // 防抖：2秒内多次修改只备份一次
+      if (backupTimer) clearTimeout(backupTimer);
+      backupTimer = setTimeout(autoBackup, 2000);
+    }
+    
+    async function autoBackup() {
+      const data = {
+        version: 1,
+        exportTime: new Date().toISOString(),
+        topics: getTopics(),
+        notes: getNotes(),
+        history: getHistory()
+      };
+      const dataStr = JSON.stringify(data, null, 2);
+      
+      // 数据没变化就不备份
+      if (dataStr === lastBackupData) return;
+      lastBackupData = dataStr;
+      
+      // 保存到localStorage的备份副本
+      localStorage.setItem('xhs_backup_data', dataStr);
+      localStorage.setItem('xhs_backup_time', new Date().toLocaleString());
+      
+      // 如果已设置备份文件，自动保存到文件
+      if (backupFileHandle) {
+        try {
+          const writable = await backupFileHandle.createWritable();
+          await writable.write(dataStr);
+          await writable.close();
+          console.log('自动保存到文件成功');
+        } catch (e) {
+          console.warn('自动保存失败，文件句柄可能已失效', e);
+          backupFileHandle = null;
+          updateBackupStatus();
+        }
+      }
+      
+      updateBackupStatus();
+    }
+    
+    function updateBackupStatus() {
+      const time = localStorage.getItem('xhs_backup_time');
+      const el = document.getElementById('backup-status');
+      if (el) {
+        if (backupFileHandle) {
+          el.innerHTML = `✅ 自动保存已开启<br><small style="opacity:0.6">${time || ''}</small>`;
+          el.style.color = '#4caf50';
+        } else if (time) {
+          el.innerHTML = `上次保存: ${time}<br><small style="opacity:0.6">点击下方设置自动保存</small>`;
+          el.style.color = '';
+        }
+      }
+    }
+    
+    // 设置自动保存路径
+    async function setupAutoSave() {
+      if (!('showSaveFilePicker' in window)) {
+        alert('你的浏览器不支持此功能，请使用最新版 Chrome 或 Edge');
+        return;
+      }
+      
+      try {
+        // 让用户选择保存位置
+        backupFileHandle = await window.showSaveFilePicker({
+          suggestedName: 'xhs_backup.json',
+          types: [{
+            description: '备份文件',
+            accept: { 'application/json': ['.json'] }
+          }]
+        });
+        
+        // 立即保存一次
+        await autoBackup();
+        showToast('自动保存已设置！数据会自动保存到该文件');
+        updateBackupStatus();
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          console.error(e);
+          alert('设置失败: ' + e.message);
+        }
+      }
+    }
+    
+    function exportBackup() {
+      const data = {
+        version: 1,
+        exportTime: new Date().toISOString(),
+        topics: getTopics(),
+        notes: getNotes(),
+        history: getHistory()
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `小红书数据备份_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份文件已下载');
+    }
+    
+    function importBackup() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            
+            if (!data.topics && !data.notes && !data.history) {
+              alert('无效的备份文件');
+              return;
+            }
+            
+            const topicCount = data.topics?.length || 0;
+            const noteCount = data.notes?.length || 0;
+            const historyCount = data.history?.length || 0;
+            
+            if (!confirm(`确认导入？\n\n选题: ${topicCount} 条\n心得: ${noteCount} 条\n历史: ${historyCount} 条\n\n⚠️ 这将覆盖当前所有数据！`)) {
+              return;
+            }
+            
+            if (data.topics) localStorage.setItem(TOPICS_KEY, JSON.stringify(data.topics));
+            if (data.notes) localStorage.setItem(NOTES_KEY, JSON.stringify(data.notes));
+            if (data.history) localStorage.setItem(HISTORY_KEY, JSON.stringify(data.history));
+            
+            renderTopics();
+            renderNotes();
+            renderHistory();
+            showToast('数据已恢复');
+          } catch (err) {
+            alert('文件解析失败: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+    
+    // ========== 侧边栏 ==========
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('show');
+      document.getElementById('sidebar-overlay').classList.toggle('show');
+      renderTopics();
+      renderNotes();
+      renderHistory();
+    }
+    
+    function switchTab(tab) {
+      document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      document.querySelector(`.sidebar-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      
+      if (tab === 'history') renderHistory();
+      else if (tab === 'notes') renderNotes();
+      else renderTopics();
+    }
+    
+    // ========== 选题库 ==========
+    function openNewTopicModal() {
+      document.getElementById('topic-modal').classList.add('show');
+      document.getElementById('new-topic-title').value = '';
+      document.getElementById('new-topic-content').value = '';
+      document.getElementById('new-topic-title').focus();
+    }
+    
+    function closeTopicModal() {
+      document.getElementById('topic-modal').classList.remove('show');
+    }
+    
+    function saveTopic() {
+      const title = document.getElementById('new-topic-title').value.trim();
+      const content = document.getElementById('new-topic-content').value.trim();
+      if (!title) { alert('请输入选题标题'); return; }
+      
+      const topics = getTopics();
+      topics.unshift({ id: Date.now(), title, content, createdAt: Date.now() });
+      saveTopicsData(topics);
+      renderTopics();
+      closeTopicModal();
+    }
+    
+    function saveCurrentAsTopic() {
+      const title = document.getElementById('memo-title').value.trim();
+      const content = document.getElementById('memo-content').value.trim();
+      if (!title) { alert('请先输入标题'); return; }
+      
+      const topics = getTopics();
+      topics.unshift({ id: Date.now(), title, content, createdAt: Date.now() });
+      saveTopicsData(topics);
+      showToast('已保存到选题库');
+      renderTopics();
+    }
+    
+    function useTopic(id) {
+      const topics = getTopics();
+      const topic = topics.find(t => t.id === id);
+      if (topic) {
+        document.getElementById('memo-title').value = topic.title;
+        if (topic.content) document.getElementById('memo-content').value = topic.content;
+        updatePreview();
+        toggleSidebar();
+      }
+    }
+    
+    function archiveTopic(id) {
+      const topics = getTopics();
+      const index = topics.findIndex(t => t.id === id);
+      if (index > -1) {
+        const topic = topics[index];
+        // 移到历史记录
+        const history = getHistory();
+        history.unshift({
+          id: Date.now(),
+          title: topic.title,
+          content: topic.content,
+          archivedAt: Date.now()
+        });
+        saveHistoryData(history);
+        // 从选题库删除
+        topics.splice(index, 1);
+        saveTopicsData(topics);
+        renderTopics();
+        showToast('已移至历史记录');
+      }
+    }
+    
+    function deleteTopic(id) {
+      if (!confirm('确定删除？')) return;
+      const topics = getTopics();
+      const index = topics.findIndex(t => t.id === id);
+      if (index > -1) {
+        topics.splice(index, 1);
+        saveTopicsData(topics);
+        renderTopics();
+      }
+    }
+    
+    function renderTopics() {
+      const topics = getTopics();
+      const el = document.getElementById('topic-list');
+      
+      if (topics.length === 0) {
+        el.innerHTML = '<div class="topic-empty"><div class="topic-empty-icon">📝</div><div class="topic-empty-text">暂无选题</div></div>';
+        return;
+      }
+      
+      el.innerHTML = topics.map(t => `
+        <div class="topic-card">
+          <div class="topic-card-header">
+            <div class="topic-card-title" onclick="useTopic(${t.id})">${t.title}</div>
+            <div class="topic-card-actions">
+              <button class="use-btn" onclick="useTopic(${t.id})" title="使用">✓</button>
+              <button class="archive-btn" onclick="archiveTopic(${t.id})" title="标记已用">📁</button>
+              <button class="delete-btn" onclick="deleteTopic(${t.id})" title="删除">×</button>
+            </div>
+          </div>
+          ${t.content ? `<div class="topic-card-content">${t.content.substring(0, 80)}...</div>` : ''}
+          <div class="topic-card-meta">
+            <span class="topic-card-date">${formatDate(t.createdAt)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // ========== 写作心得 ==========
+    const NOTE_TYPES = {
+      success: { icon: '✅', label: '成功经验', color: '#4caf50' },
+      fail: { icon: '❌', label: '踩坑教训', color: '#f44336' },
+      idea: { icon: '💡', label: '灵感想法', color: '#ff9800' },
+      data: { icon: '📊', label: '数据复盘', color: '#2196f3' }
+    };
+    
+    let editingNoteId = null; // 正在编辑的心得ID
+    
+    function openNewNoteModal() {
+      editingNoteId = null;
+      document.getElementById('note-modal-title').textContent = '💡 记录心得';
+      document.getElementById('note-type').value = 'success';
+      document.getElementById('note-content').value = '';
+      document.getElementById('note-modal').classList.add('show');
+      document.getElementById('note-content').focus();
+    }
+    
+    function editNote(id) {
+      const notes = getNotes();
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+      
+      editingNoteId = id;
+      document.getElementById('note-modal-title').textContent = '✏️ 编辑心得';
+      document.getElementById('note-type').value = note.type;
+      document.getElementById('note-content').value = note.content;
+      document.getElementById('note-modal').classList.add('show');
+      document.getElementById('note-content').focus();
+    }
+    
+    function closeNoteModal() {
+      document.getElementById('note-modal').classList.remove('show');
+      editingNoteId = null;
+    }
+    
+    function saveNote() {
+      const type = document.getElementById('note-type').value;
+      const content = document.getElementById('note-content').value.trim();
+      if (!content) { alert('请输入心得内容'); return; }
+      
+      const notes = getNotes();
+      
+      if (editingNoteId) {
+        // 编辑模式
+        const index = notes.findIndex(n => n.id === editingNoteId);
+        if (index > -1) {
+          notes[index].type = type;
+          notes[index].content = content;
+          notes[index].updatedAt = Date.now();
+        }
+        showToast('心得已更新');
+      } else {
+        // 新建模式
+        notes.unshift({ id: Date.now(), type, content, createdAt: Date.now() });
+        showToast('心得已保存');
+      }
+      
+      saveNotesData(notes);
+      renderNotes();
+      closeNoteModal();
+    }
+    
+    function deleteNote(id) {
+      if (!confirm('确定删除这条心得？')) return;
+      const notes = getNotes();
+      const index = notes.findIndex(n => n.id === id);
+      if (index > -1) {
+        notes.splice(index, 1);
+        saveNotesData(notes);
+        renderNotes();
+      }
+    }
+    
+    function renderNotes() {
+      const notes = getNotes();
+      const el = document.getElementById('notes-list');
+      
+      if (notes.length === 0) {
+        el.innerHTML = '<div class="topic-empty"><div class="topic-empty-icon">💡</div><div class="topic-empty-text">暂无心得<br><small style="opacity:0.5">记录你的运营经验和教训</small></div></div>';
+        return;
+      }
+      
+      el.innerHTML = notes.map(n => {
+        const typeInfo = NOTE_TYPES[n.type] || NOTE_TYPES.idea;
+        return `
+          <div class="topic-card note-card" style="border-left: 3px solid ${typeInfo.color}">
+            <div class="topic-card-header">
+              <div class="note-type-badge" style="background: ${typeInfo.color}">${typeInfo.icon} ${typeInfo.label}</div>
+              <div class="topic-card-actions">
+                <button class="edit-btn" onclick="editNote(${n.id})" title="编辑">✏️</button>
+                <button class="delete-btn" onclick="deleteNote(${n.id})" title="删除">×</button>
+              </div>
+            </div>
+            <div class="note-card-content">${n.content}</div>
+            <div class="topic-card-meta">
+              <span class="topic-card-date">${formatDate(n.createdAt)}${n.updatedAt ? ' (已编辑)' : ''}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // ========== 历史记录 ==========
+    function renderHistory() {
+      const history = getHistory();
+      const el = document.getElementById('history-list');
+      
+      if (history.length === 0) {
+        el.innerHTML = '<div class="topic-empty"><div class="topic-empty-icon">📜</div><div class="topic-empty-text">暂无历史记录<br><small style="opacity:0.5">选题标记已用后会出现在这里</small></div></div>';
+        return;
+      }
+      
+      el.innerHTML = history.map(h => `
+        <div class="topic-card">
+          <div class="topic-card-header">
+            <div class="topic-card-title" onclick="useHistory(${h.id})">${h.title}</div>
+            <div class="topic-card-actions">
+              <button class="use-btn" onclick="useHistory(${h.id})" title="再次使用">↺</button>
+              <button class="delete-btn" onclick="deleteHistory(${h.id})" title="删除">×</button>
+            </div>
+          </div>
+          ${h.content ? `<div class="topic-card-content">${h.content.substring(0, 80)}...</div>` : ''}
+          <div class="topic-card-meta">
+            <span class="topic-card-date">${formatDate(h.archivedAt)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function useHistory(id) {
+      const history = getHistory();
+      const item = history.find(h => h.id === id);
+      if (item) {
+        document.getElementById('memo-title').value = item.title;
+        if (item.content) document.getElementById('memo-content').value = item.content;
+        updatePreview();
+        toggleSidebar();
+      }
+    }
+    
+    function deleteHistory(id) {
+      if (!confirm('确定删除？')) return;
+      const history = getHistory();
+      const index = history.findIndex(h => h.id === id);
+      if (index > -1) {
+        history.splice(index, 1);
+        saveHistoryData(history);
+        renderHistory();
+      }
+    }
+    
+    // ========== 推流机制弹窗 ==========
+    function openFlowModal() {
+      document.getElementById('flow-modal').classList.add('show');
+    }
+    function closeFlowModal() {
+      document.getElementById('flow-modal').classList.remove('show');
+    }
+    
+    // ========== 标签词库 ==========
+    function openTagsModal() {
+      selectedTags = [];
+      renderTagsModal();
+      document.getElementById('tags-modal').classList.add('show');
+    }
+    
+    function closeTagsModal() {
+      document.getElementById('tags-modal').classList.remove('show');
+    }
+    
+    function renderTagsModal() {
+      const body = document.getElementById('tags-body');
+      body.innerHTML = TAG_CATEGORIES.map(cat => `
+        <div class="tag-category">
+          <div class="tag-category-title">${cat.name}</div>
+          <div class="tag-list">
+            ${cat.tags.map(tag => `
+              <div class="tag-item ${selectedTags.includes(tag) ? 'selected' : ''}" onclick="toggleTag('${tag}')">#${tag}</div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('selected-tags').textContent = selectedTags.map(t => '#' + t).join(' ');
+    }
+    
+    function toggleTag(tag) {
+      const index = selectedTags.indexOf(tag);
+      if (index > -1) {
+        selectedTags.splice(index, 1);
+      } else {
+        selectedTags.push(tag);
+      }
+      renderTagsModal();
+    }
+    
+    function clearSelectedTags() {
+      selectedTags = [];
+      renderTagsModal();
+    }
+    
+    function copySelectedTags() {
+      if (selectedTags.length === 0) {
+        alert('请先选择标签');
+        return;
+      }
+      const text = selectedTags.map(t => '#' + t).join(' ');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制：' + text);
+      });
+    }
+    
+    // ========== 工具函数 ==========
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return `${d.getMonth() + 1}月${d.getDate()}日`;
+    }
+    
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = '✓ ' + msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    
+    // ========== 笔记生成 ==========
+    function parseContent(text) {
+      const lines = text.split('\n');
+      const result = [];
+      let tableBuffer = [];
+      let inTable = false;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        
+        // 检测是否是表格行
+        const isTableRow = /^\|.+\|$/.test(trimmed);
+        const isSeparator = /^\|[-:\s|]+\|$/.test(trimmed);
+        
+        if (isTableRow || isSeparator) {
+          if (!isSeparator) {
+            tableBuffer.push(trimmed);
+          }
+          inTable = true;
+          continue;
+        }
+        
+        // 如果刚结束表格
+        if (inTable && tableBuffer.length > 0) {
+          result.push(buildTable(tableBuffer));
+          tableBuffer = [];
+          inTable = false;
+        }
+        
+        // 处理普通行
+        result.push(parseLine(line));
+      }
+      
+      // 处理末尾的表格
+      if (tableBuffer.length > 0) {
+        result.push(buildTable(tableBuffer));
+      }
+      
+      return result.join('');
+    }
+    
+    // 单行解析
+    function parseLine(line) {
+      const html = line;
+      const trimmed = html.trim();
+      
+      // 空行
+      if (!trimmed) {
+        return `<div class="text-line empty"></div>`;
+      }
+      
+      // 图片 ![alt|align|size](imgId) 或 ![alt](url)
+      if (/^!\[.*?\]\(.+?\)$/.test(trimmed)) {
+        const match = trimmed.match(/^!\[(.*?)\]\((.+?)\)$/);
+        if (match) {
+          const params = match[1].split('|');
+          const alt = params[0] || '图片';
+          const align = params.find(p => ['left', 'center', 'right'].includes(p)) || 'center';
+          const size = params.find(p => ['small', 'medium', 'large', 'full'].includes(p)) || 'medium';
+          const src = match[2];
+          // 检查是否是内部存储的图片
+          const imgSrc = imageStore[src] || src;
+          return `<div class="image-container align-${align}"><img src="${imgSrc}" alt="${alt}" class="memo-image size-${size}" data-imgid="${src}" onclick="openImageEditor('${src}')"></div>`;
+        }
+      }
+      
+      // 【小标题】 → 带背景的标题块
+      if (/^【[^：]+】$/.test(trimmed)) {
+        const title = trimmed.slice(1, -1);
+        return `<div class="section-title">${title}</div>`;
+      }
+      
+      // 【xxx：内容】 → 带标签的标题
+      if (/^【.+：.+】$/.test(trimmed)) {
+        const match = trimmed.match(/^【(.+?)：(.+)】$/);
+        if (match) {
+          return `<div class="section-title"><span class="section-label">${match[1]}</span>${match[2]}</div>`;
+        }
+      }
+      
+      // ▸ 或 ▶ 开头 → 强调列表项
+      if (/^[▸▶►]/.test(trimmed)) {
+        const content = trimmed.slice(1).trim();
+        return `<div class="list-item accent"><span class="list-dot">▸</span>${parseInline(content)}</div>`;
+      }
+      
+      // • 开头 → 列表项
+      if (/^[•·]/.test(trimmed)) {
+        const content = trimmed.slice(1).trim();
+        return `<div class="list-item"><span class="list-dot">•</span>${parseInline(content)}</div>`;
+      }
+      
+      // ✓ ✔ ☑ 开头 → 完成项
+      if (/^[✓✔☑]/.test(trimmed)) {
+        const content = trimmed.slice(1).trim();
+        return `<div class="list-item check"><span class="list-dot">✓</span>${parseInline(content)}</div>`;
+      }
+      
+      // ✗ ✘ ☒ X 开头 → 错误项
+      if (/^[✗✘☒✕X]/.test(trimmed) && !/^XG/.test(trimmed)) {
+        const content = trimmed.slice(1).trim();
+        return `<div class="list-item cross"><span class="list-dot">✗</span>${parseInline(content)}</div>`;
+      }
+      
+      // 🔥 ⭐ 💡 等emoji开头 → 图标行
+      if (/^[\u{1F300}-\u{1F9FF}]/u.test(trimmed)) {
+        return `<div class="icon-line">${parseInline(trimmed)}</div>`;
+      }
+      
+      // --- 或 === 分割线
+      if (/^[-=]{3,}$/.test(trimmed)) {
+        return `<div class="divider"></div>`;
+      }
+      
+      // > 引用块
+      if (/^>/.test(trimmed)) {
+        const content = trimmed.slice(1).trim();
+        return `<div class="quote-block">${parseInline(content)}</div>`;
+      }
+      
+      // 数字序号开头 ①②③ 或 1. 2. 3.
+      if (/^[①②③④⑤⑥⑦⑧⑨⑩]/.test(trimmed)) {
+        const num = trimmed[0];
+        const content = trimmed.slice(1).trim();
+        return `<div class="step-item"><span class="step-num">${num}</span>${parseInline(content)}</div>`;
+      }
+      if (/^\d+[.、]/.test(trimmed)) {
+        const match = trimmed.match(/^(\d+)[.、]\s*(.*)$/);
+        if (match) {
+          const circleNums = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩'];
+          const num = circleNums[parseInt(match[1]) - 1] || match[1];
+          return `<div class="step-item"><span class="step-num">${num}</span>${parseInline(match[2])}</div>`;
+        }
+      }
+      
+      // 普通行
+      return `<div class="text-line">${parseInline(html)}</div>`;
+    }
+    
+    // 构建表格HTML
+    function buildTable(lines) {
+      if (lines.length === 0) return '';
+      
+      let html = '<div class="table-wrapper"><table class="memo-table">';
+      
+      lines.forEach((line, idx) => {
+        const cells = line.split('|').filter(c => c !== '');
+        const tag = idx === 0 ? 'th' : 'td';
+        const rowClass = idx === 0 ? 'header' : (idx % 2 === 0 ? 'even' : 'odd');
+        
+        html += `<tr class="${rowClass}">`;
+        cells.forEach(cell => {
+          html += `<${tag}>${parseInline(cell.trim())}</${tag}>`;
+        });
+        html += '</tr>';
+      });
+      
+      html += '</table></div>';
+      return html;
+    }
+    
+    // 行内格式解析
+    function parseInline(text) {
+      let html = text;
+      // **加粗**
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<span class="bold">$1</span>');
+      // ==高亮==
+      html = html.replace(/==([^=]+)==/g, '<span class="highlight">$1</span>');
+      // ~~删除线~~
+      html = html.replace(/~~([^~]+)~~/g, '<span class="strikethrough">$1</span>');
+      // `代码`
+      html = html.replace(/`([^`]+)`/g, '<span class="code-inline">$1</span>');
+      // 「引用」
+      html = html.replace(/「([^」]+)」/g, '<span class="quote-text">$1</span>');
+      // 『重点』
+      html = html.replace(/『([^』]+)』/g, '<span class="emphasis-box">$1</span>');
+      // →箭头
+      html = html.replace(/→/g, '<span class="arrow">→</span>');
+      // 冒号后内容（用于 输入：xxx 这种格式）
+      html = html.replace(/^([\u4e00-\u9fa5]+)：/g, '<span class="label">$1：</span>');
+      return html;
+    }
+    
+    // ========== 图片拖拽功能 ==========
+    const imageStore = {}; // 存储图片 base64
+    
+    function setupImageDrag() {
+      const textarea = document.getElementById('memo-content');
+      
+      textarea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.add('drag-over');
+      });
+      
+      textarea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove('drag-over');
+      });
+      
+      textarea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        textarea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+        
+        for (let file of files) {
+          if (file.type.startsWith('image/')) {
+            handleImageFile(file, textarea);
+          }
+        }
+      });
+      
+      // 支持粘贴图片和文本
+      textarea.addEventListener('paste', (e) => {
+        const items = e.clipboardData.items;
+        let hasImage = false;
+        for (let item of items) {
+          if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            handleImageFile(file, textarea);
+            hasImage = true;
+            break;
+          }
+        }
+        // 粘贴文本时，延迟重置到第一页
+        if (!hasImage) {
+          setTimeout(() => {
+            updatePreview(true); // 重置到第一页
+          }, 10);
+        }
+      });
+    }
+    
+    function handleImageFile(file, textarea) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target.result;
+        const imgId = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        imageStore[imgId] = base64;
+        
+        // 在光标位置插入图片标记，默认中等大小居中
+        const cursorPos = textarea.selectionStart;
+        const textBefore = textarea.value.substring(0, cursorPos);
+        const textAfter = textarea.value.substring(cursorPos);
+        const imgTag = `\n![图片|center|medium](${imgId})\n`;
+        
+        textarea.value = textBefore + imgTag + textAfter;
+        textarea.selectionStart = textarea.selectionEnd = cursorPos + imgTag.length;
+        textarea.focus();
+        
+        updatePreview();
+        showToast('图片已插入，点击图片可编辑');
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // 图片编辑功能
+    let currentEditingImgId = null;
+    
+    function openImageEditor(imgId) {
+      currentEditingImgId = imgId;
+      const textarea = document.getElementById('memo-content');
+      const content = textarea.value;
+      
+      // 解析当前图片的设置
+      const regex = new RegExp(`!\\[([^\\]]*?)\\]\\(${imgId}\\)`);
+      const match = content.match(regex);
+      
+      let align = 'center', size = 'medium';
+      if (match) {
+        const params = match[1].split('|');
+        align = params.find(p => ['left', 'center', 'right'].includes(p)) || 'center';
+        size = params.find(p => ['small', 'medium', 'large', 'full'].includes(p)) || 'medium';
+      }
+      
+      document.getElementById('img-align').value = align;
+      document.getElementById('img-size').value = size;
+      
+      // 更新按钮状态
+      document.querySelectorAll('.align-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === align);
+      });
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === size);
+      });
+      
+      // 显示预览
+      document.getElementById('img-preview').src = imageStore[imgId] || imgId;
+      document.getElementById('image-editor-modal').classList.add('show');
+    }
+    
+    function closeImageEditor() {
+      document.getElementById('image-editor-modal').classList.remove('show');
+      currentEditingImgId = null;
+    }
+    
+    function applyImageSettings(closeAfter = true) {
+      if (!currentEditingImgId) return;
+      
+      const align = document.getElementById('img-align').value;
+      const size = document.getElementById('img-size').value;
+      const textarea = document.getElementById('memo-content');
+      
+      // 替换图片标记
+      const regex = new RegExp(`!\\[[^\\]]*?\\]\\(${currentEditingImgId}\\)`);
+      textarea.value = textarea.value.replace(regex, `![图片|${align}|${size}](${currentEditingImgId})`);
+      
+      updatePreview();
+      
+      if (closeAfter) {
+        closeImageEditor();
+        showToast('图片设置已更新');
+      }
+    }
+    
+    function deleteImage() {
+      if (!currentEditingImgId) return;
+      if (!confirm('确定删除这张图片吗？')) return;
+      
+      const textarea = document.getElementById('memo-content');
+      const regex = new RegExp(`\\n?!\\[[^\\]]*?\\]\\(${currentEditingImgId}\\)\\n?`);
+      textarea.value = textarea.value.replace(regex, '\n');
+      
+      delete imageStore[currentEditingImgId];
+      updatePreview();
+      closeImageEditor();
+      showToast('图片已删除');
+    }
+    
+    function setAlign(value) {
+      document.getElementById('img-align').value = value;
+      document.querySelectorAll('.align-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+      // 实时预览，不关闭弹窗
+      applyImageSettings(false);
+    }
+    
+    function setSize(value) {
+      document.getElementById('img-size').value = value;
+      document.querySelectorAll('.size-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+      // 实时预览，不关闭弹窗
+      applyImageSettings(false);
+    }
+    
+    // ========== 主题切换 ==========
+    let currentTheme = 'memo';
+    
+    function switchTheme(theme) {
+      currentTheme = theme;
+      
+      // 更新按钮状态
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === theme);
+      });
+      
+      // 更新预览区域的主题类
+      const previewContainer = document.getElementById('preview-container');
+      const exportContainer = document.getElementById('export-container');
+      
+      // 移除所有主题类
+      previewContainer.classList.remove('theme-memo', 'theme-zhihu', 'theme-dark');
+      exportContainer.classList.remove('theme-memo', 'theme-zhihu', 'theme-dark');
+      
+      // 添加当前主题类
+      previewContainer.classList.add(`theme-${theme}`);
+      exportContainer.classList.add(`theme-${theme}`);
+      
+      // 保存到localStorage
+      localStorage.setItem('noteTheme', theme);
+      
+      updatePreview();
+    }
+    
+    // 初始化主题
+    function initTheme() {
+      const savedTheme = localStorage.getItem('noteTheme') || 'memo';
+      switchTheme(savedTheme);
+    }
+    
+    function calculatePages(content) {
+      // 每页最大行数（简单可靠）
+      const firstPageLines = 18;   // 第一页有标题，少放几行
+      const otherPageLines = 22;   // 其他页可以多放
+      
+      const lines = content.split('\n');
+      const pages = [];
+      let currentPageLines = [];
+      let isFirstPage = true;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        
+        // 跳过表格分隔行（|---|---|）不占行数
+        if (/^\|[-:\s|]+\|$/.test(trimmed)) {
+          currentPageLines.push(line);
+          continue;
+        }
+        
+        // 计算这一行占多少"逻辑行"
+        let lineCount = 1;
+        
+        // 表格行占1行
+        if (/^\|.+\|$/.test(trimmed)) {
+          lineCount = 1;
+        }
+        // 标题块占1.5行
+        else if (trimmed.startsWith('【') && trimmed.endsWith('】')) {
+          lineCount = 1.5;
+        }
+        // 图片占4行
+        else if (trimmed.startsWith('![') && trimmed.includes('](')) {
+          lineCount = 4;
+        }
+        // 空行占0.5行
+        else if (!trimmed) {
+          lineCount = 0.5;
+        }
+        // 长文本行可能占多行
+        else if (line.length > 35) {
+          lineCount = Math.ceil(line.length / 35);
+        }
+        
+        const maxLines = isFirstPage ? firstPageLines : otherPageLines;
+        const currentCount = currentPageLines.filter(l => !/^\|[-:\s|]+\|$/.test(l.trim())).length;
+        
+        // 检查是否需要换页
+        if (currentCount + lineCount > maxLines && currentPageLines.length > 0) {
+          pages.push(currentPageLines.join('\n'));
+          currentPageLines = [line];
+          isFirstPage = false;
+        } else {
+          currentPageLines.push(line);
+        }
+      }
+      if (currentPageLines.length > 0) pages.push(currentPageLines.join('\n'));
+      return pages.length > 0 ? pages : [''];
+    }
+    
+    function parseSubtitle(text) {
+      if (!text.trim()) return null;
+      const match = text.match(/^(.+?)\s*(\d+)\s*$/);
+      if (match) return { text: match[1].trim(), number: match[2] };
+      return { text: text, number: null };
+    }
+    
+    function generatePageHTML(title, subtitle, content, pageNum, total) {
+      const parsedContent = parseContent(content);
+      const showPageNum = total > 1;
+      const subtitleData = parseSubtitle(subtitle);
+      
+      let subtitleHTML = '';
+      if (subtitleData) {
+        subtitleHTML = `<div class="memo-subtitle">${subtitleData.text}${subtitleData.number ? `<span class="tag">${subtitleData.number}</span>` : ''}</div>`;
+      }
+      
+      const isFirstPage = pageNum === 1;
+      
+      return `
+        <div class="memo-page">
+          <div class="memo-inner ${!isFirstPage ? 'no-title' : ''}">
+            ${isFirstPage ? `<div class="memo-title">${title}</div>${subtitleHTML}` : ''}
+            <div class="memo-body"><div class="memo-content">${parsedContent}</div></div>
+            ${showPageNum ? `<div class="page-indicator">${pageNum} / ${total}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    function updatePreview(resetToFirstPage = false) {
+      const title = document.getElementById('memo-title').value || '标题';
+      const subtitle = document.getElementById('memo-subtitle').value || '';
+      const content = document.getElementById('memo-content').value || '';
+      
+      pagesData = calculatePages(content);
+      totalPages = pagesData.length;
+      
+      // 如果需要重置到第一页（比如粘贴新内容时）
+      if (resetToFirstPage) {
+        currentPage = 0;
+      } else {
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        if (currentPage < 0) currentPage = 0;
+      }
+      
+      document.getElementById('pages-container').innerHTML = generatePageHTML(title, subtitle, pagesData[currentPage], currentPage + 1, totalPages);
+      
+      let exportHTML = '';
+      for (let i = 0; i < totalPages; i++) {
+        exportHTML += `<div class="export-page" data-page="${i}">${generatePageHTML(title, subtitle, pagesData[i], i + 1, totalPages)}</div>`;
+      }
+      document.getElementById('export-container').innerHTML = exportHTML;
+      
+      document.getElementById('page-info').textContent = `📄 共 ${totalPages} 页`;
+      document.getElementById('page-display').textContent = `${currentPage + 1} / ${totalPages}`;
+      document.getElementById('btn-prev').disabled = currentPage === 0;
+      document.getElementById('btn-next').disabled = currentPage === totalPages - 1;
+    }
+    
+    function prevPage() { if (currentPage > 0) { currentPage--; updatePreview(); } }
+    function nextPage() { if (currentPage < totalPages - 1) { currentPage++; updatePreview(); } }
+    
+    function showLoading(show) { document.getElementById('loading').classList.toggle('show', show); }
+    
+    async function downloadCurrentPage() {
+      showLoading(true);
+      try {
+        const el = document.querySelector(`.export-page[data-page="${currentPage}"] .memo-page`);
+        const bgColor = currentTheme === 'dark' ? '#1a1a2e' : '#fefefe';
+        const canvas = await html2canvas(el, { width: 1080, height: 1440, scale: 1, useCORS: true, backgroundColor: bgColor });
+        const link = document.createElement('a');
+        link.download = `${currentPage + 1}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (e) { alert('下载失败'); console.error(e); }
+      showLoading(false);
+    }
+    
+    async function downloadAllPages() {
+      if (totalPages === 1) {
+        // 只有一页直接下载图片
+        return downloadCurrentPage();
+      }
+      
+      showLoading(true);
+      try {
+        const zip = new JSZip();
+        
+        for (let i = 0; i < totalPages; i++) {
+          const el = document.querySelector(`.export-page[data-page="${i}"] .memo-page`);
+          const bgColor = currentTheme === 'dark' ? '#1a1a2e' : '#fefefe';
+          const canvas = await html2canvas(el, { width: 1080, height: 1440, scale: 1, useCORS: true, backgroundColor: bgColor });
+          
+          // 将canvas转为blob
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          
+          // 添加到zip，文件名为 1.png, 2.png, 3.png...
+          zip.file(`${i + 1}.png`, blob);
+        }
+        
+        // 生成zip文件并下载
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(zipBlob);
+        link.download = `小红书笔记_${totalPages}页.zip`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        
+        showToast(`已打包 ${totalPages} 张图片`);
+      } catch (e) { 
+        alert('下载失败: ' + e.message); 
+        console.error(e); 
+      }
+      showLoading(false);
+    }
+    
+    // 初始化
+    initTheme();
+    updatePreview();
+    updateBackupStatus();
+    setupImageDrag();
+  </script>
+</body>
+</html>
